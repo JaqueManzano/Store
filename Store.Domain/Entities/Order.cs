@@ -1,16 +1,24 @@
-﻿using Store.Domain.Enums;
+﻿using Flunt.Notifications;
+using Flunt.Validations;
+using Store.Domain.Enums;
 
 namespace Store.Domain.Entities
 {
     public class Order : Entity
-    { 
+    {
         private readonly IList<OrderItem> _items;
-        public Order(Customer customer, decimal deliveryFee, Discount discount )
+        public Order(Customer customer, decimal deliveryFee, Discount discount)
         {
+
+            AddNotifications(
+                new Contract<Notification>()
+                .Requires()
+                .IsNotNull(customer, "Customer", "Cliente inválido.")
+                .IsGreaterThan(deliveryFee, 0, "A taxa de entrega deve ser maior que zero."));
+
             Customer = customer;
             Date = DateTime.Now;
-            Number = Guid.NewGuid().ToString().Substring(0,8);
-            Items = new List<OrderItem>();
+            Number = Guid.NewGuid().ToString().Substring(0, 8);
             DeliveryFee = deliveryFee;
             Discount = discount;
             Status = EOrderStatus.WaitingPayment;
@@ -27,7 +35,8 @@ namespace Store.Domain.Entities
         public void AddItem(Product product, int quantity)
         {
             var item = new OrderItem(product, quantity);
-            _items.Add(item);
+            if (item.IsValid)
+                _items.Add(item);
         }
 
         public decimal Total()
@@ -44,7 +53,7 @@ namespace Store.Domain.Entities
             return total;
         }
 
-        public void Pay(decimal  amount)
+        public void Pay(decimal amount)
         {
             if (amount == Total())
                 Status = EOrderStatus.WaitingDelivery;
