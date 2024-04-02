@@ -6,8 +6,8 @@ namespace Store.Domain.Entities
 {
     public class Order : Entity
     {
-        private readonly IList<OrderItem> _items;
-        public Order(Customer customer, decimal deliveryFee, Discount discount)
+        private readonly IList<OrderItem> _items = new List<OrderItem>();
+        public Order(Customer customer, decimal deliveryFee, Discount? discount)
         {
 
             AddNotifications(
@@ -29,7 +29,7 @@ namespace Store.Domain.Entities
         public string Number { get; private set; }
         public IList<OrderItem> Items => _items.ToList();
         public decimal DeliveryFee { get; private set; }
-        public Discount Discount { get; private set; }
+        public Discount? Discount { get; private set; }
         public EOrderStatus Status { get; private set; }
 
         public void AddItem(Product product, int quantity)
@@ -55,6 +55,12 @@ namespace Store.Domain.Entities
 
         public void Pay(decimal amount)
         {
+            if (!Items.Any())
+            {
+                AddNotification("Order.Items","Não é possível pagar um pedido sem produtos.");
+                return;
+            }    
+
             if (amount == Total())
                 Status = EOrderStatus.WaitingDelivery;
         }
