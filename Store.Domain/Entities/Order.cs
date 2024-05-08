@@ -15,7 +15,6 @@ namespace Store.Domain.Entities
                 .Requires()
                 .IsNotNull(customer, "Customer", "Cliente inválido.")
                 .IsGreaterThan(deliveryFee, 0, "A taxa de entrega deve ser maior que zero."));
-
             Customer = customer;
             Date = DateTime.Now;
             Number = Guid.NewGuid().ToString().Substring(0, 8);
